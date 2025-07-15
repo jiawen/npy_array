@@ -1,2 +1,21 @@
-build --cxxopt=-std=c++17 --cxxopt=-stdlib=libc++
-test --cxxopt=-std=c++17 --cxxopt=-stdlib=libc++
+# Automatically picks up host-specific configs:
+# Linux -> build:linux
+# MacOS -> build:macos
+# Windows -> build:windows
+# https://bazel.build/reference/command-line-reference#flag--enable_platform_specific_config
+common --enable_platform_specific_config
+
+# MacOS.
+build:macos --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+
+# Linux.
+build:linux --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+# Enable position independent code (this is the default on macOS and Windows)
+# (Workaround for https://github.com/bazelbuild/rules_foreign_cc/issues/421)
+build:linux --copt=-fdebug-types-section
+build:linux --copt=-fPIC
+build:linux --copt=-Wno-deprecated-declarations
+build:linux --cxxopt=-fsized-deallocation --host_cxxopt=-fsized-deallocation
+build:linux --conlyopt=-fexceptions
+build:linux --fission=dbg,opt
+build:linux --features=per_object_debug_info

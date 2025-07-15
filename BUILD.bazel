@@ -1,4 +1,34 @@
 cc_library(
+    name = "compile_time_loop",
+    hdrs = ["npy_array/compile_time_loop.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "data_type",
+    srcs = ["npy_array/data_type.cpp"],
+    hdrs = [
+        "npy_array/data_type.h",
+        "npy_array/half.h",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "dynamic_array",
+    srcs = ["npy_array/dynamic_array.cpp"],
+    hdrs = ["npy_array/dynamic_array.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":compile_time_loop",
+        ":data_type",
+        "@com_github_dsharlet_array//:array",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
     name = "npy_array",
     srcs = ["npy_array/npy_array.cc"],
     hdrs = ["npy_array/npy_array.h"],
@@ -10,12 +40,30 @@ cc_library(
     ],
 )
 
+# GoogleTest support for npy_array::half.
+cc_library(
+    name = "gtest_half",
+    srcs = ["npy_array/gtest_half.h"],
+    visibility = ["//visibility:public"],
+)
+
 cc_test(
     name = "npy_array_test",
     srcs = ["tests/npy_array_test.cc"],
     deps = [
         ":npy_array",
         "@com_github_dsharlet_array//:array",
+        "@com_github_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "dynamic_array_test",
+    srcs = ["npy_array/dynamic_array_test.cpp"],
+    deps = [
+        ":dynamic_array",
+        ":gtest_half",
+        "@com_github_google_googletest//:gtest",
         "@com_github_google_googletest//:gtest_main",
     ],
 )
