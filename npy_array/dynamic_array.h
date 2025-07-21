@@ -38,10 +38,10 @@ class DynamicShape {
 
   // Returns true if the shape has no elements. Note that a rank-zero shape is
   // not empty because it has one element.
-  bool empty() const { return numElements() == 0; }
+  bool empty() const { return size() == 0; }
 
-  // Synonym for numElements() to support STL / gMock.
-  int64_t size() const { return numElements(); }
+  // Synonym for NumElements() to support STL / gMock.
+  int64_t size() const { return NumElements(); }
 
   // Returns a Span of all the dims in this shape.
   // TODO(jiawen): ABSL_LIFETIME_BOUND.
@@ -57,7 +57,7 @@ class DynamicShape {
 
   // Returns the number of elements (product of extents). Note that a rank-zero
   // array is a scalar and has 1 element.
-  int64_t numElements() const;
+  int64_t NumElements() const;
 
   // TODO(jiawen): assert.
   int64_t min(int64_t d) const { return dims_[d].min(); }  // NOLINT
@@ -68,7 +68,7 @@ class DynamicShape {
   // linear memory.
   //
   // For a scalar, `indices` is {} and evaluates to 0.
-  int64_t flatIndex(absl::Span<const int64_t> indices) const;
+  int64_t FlatIndex(absl::Span<const int64_t> indices) const;
 
   // Some synonyms for commonly used dimensions and extents.
   // ! Not bounds checked.
@@ -124,7 +124,7 @@ class DynamicArrayRef {
 
   // The total number of bytes occupied by the data.
   // This is equal to size() * elementSize(data_type()).
-  int64_t totalSizeBytes() const;
+  int64_t TotalSizeBytes() const;
 
   DataType data_type() const { return data_type_; }
 
@@ -133,16 +133,16 @@ class DynamicArrayRef {
 
   // The number of bytes occupied by each element.
   // Equal to elementSize(dataType()).
-  int64_t elementSizeBytes() const { return elementSize(data_type_); }
+  int64_t ElementSizeBytes() const { return ElementSize(data_type_); }
 
   // The number of dimensions.
   int64_t rank() const { return shape_.rank(); }
 
   // The number of elements.
-  int64_t numElements() const { return shape_.numElements(); }
+  int64_t NumElements() const { return shape_.NumElements(); }
 
   // Synonym for numElements() to support STL / gMock.
-  int64_t size() const { return numElements(); }
+  int64_t size() const { return NumElements(); }
 
   // Some synonyms for commonly used dimensions and extents.
   // ! Not bounds checked.
@@ -179,26 +179,26 @@ class DynamicArrayRef {
 
   // Retrieves the element at the given indices.
   template <typename T>
-  T at(absl::Span<const int64_t> indices) const;
+  T At(absl::Span<const int64_t> indices) const;
 
   // Retrieves a mutable reference to the element at the given indices.
   template <typename T>
-  T& at(absl::Span<const int64_t> indices);
+  T& At(absl::Span<const int64_t> indices);
 
   // Same as at<T>(indices) = value, but deduces `T` from `value` so the caller
   // can write `.set(indices, value)`.
   template <typename T>
-  void set(absl::Span<const int64_t> indices, T value) {
-    at<T>(indices) = value;
+  void Set(absl::Span<const int64_t> indices, T value) {
+    At<T>(indices) = value;
   }
 
   // Returns a pointer to the element at the given indices.
   template <typename T>
-  const T* elementPtr(absl::Span<const int64_t> indices) const;
+  const T* ElementPtr(absl::Span<const int64_t> indices) const;
 
   // Returns a mutable pointer to the element at the given indices.
   template <typename T>
-  T* elementPtr(absl::Span<const int64_t> indices);
+  T* ElementPtr(absl::Span<const int64_t> indices);
 
   // Returns a pointer to the first element.
   const uint8_t* data() const { return data_; }
@@ -251,7 +251,7 @@ class DynamicArray {
 
   // The total number of bytes occupied by the data.
   // This is equal to size() * elementSize(data_type()).
-  int64_t totalSizeBytes() const { return numElements() * elementSizeBytes(); }
+  int64_t TotalSizeBytes() const { return NumElements() * ElementSizeBytes(); }
 
   DataType data_type() const { return data_type_; }
 
@@ -259,16 +259,16 @@ class DynamicArray {
 
   // The number of bytes occupied by each element.
   // Equal to elementSize(dataType()).
-  int64_t elementSizeBytes() const { return elementSize(data_type_); }
+  int64_t ElementSizeBytes() const { return ElementSize(data_type_); }
 
   // The number of dimensions.
   int64_t rank() const { return shape_.rank(); }
 
   // The number of elements.
-  int64_t numElements() const { return shape_.numElements(); }
+  int64_t NumElements() const { return shape_.NumElements(); }
 
-  // Synonym for numElements() to support STL / gMock.
-  int64_t size() const { return numElements(); }
+  // Synonym for NumElements() to support STL / gMock.
+  int64_t size() const { return NumElements(); }
 
   // Some synonyms for commonly used dimensions and extents.
   // ! Not bounds checked.
@@ -305,31 +305,31 @@ class DynamicArray {
 
   // Retrieves the element at the given indices.
   template <typename T>
-  T at(absl::Span<const int64_t> indices) const {
+  T At(absl::Span<const int64_t> indices) const {
     // TODO(jiawen): Get rid of this const_cast by implementing cref().
-    return const_cast<DynamicArray&>(*this).ref().at<T>(indices);
+    return const_cast<DynamicArray&>(*this).ref().At<T>(indices);
   }
 
   // Retrieves a mutable reference to the element at the given indices.
   template <typename T>
-  T& at(absl::Span<const int64_t> indices) {
-    return ref().at<T>(indices);
+  T& At(absl::Span<const int64_t> indices) {
+    return ref().At<T>(indices);
   }
 
   // Same as at<T>(indices) = value, but deduces `T` from `value` so the
   // caller can write `.set(indices, value)`.
   template <typename T>
-  void set(absl::Span<const int64_t> indices, T value) {
-    at<T>(indices) = value;
+  void Set(absl::Span<const int64_t> indices, T value) {
+    At<T>(indices) = value;
   }
 
   // Returns a pointer to the element at the given indices.
   template <typename T>
-  const T* elementPtr(absl::Span<const int64_t> indices) const;
+  const T* ElementPtr(absl::Span<const int64_t> indices) const;
 
   // Returns a mutable pointer to the element at the given indices.
   template <typename T>
-  T* elementPtr(absl::Span<const int64_t> indices);
+  T* ElementPtr(absl::Span<const int64_t> indices);
 
   // Returns a pointer to the first element.
   const uint8_t* data() const { return data_.data(); }
@@ -354,12 +354,12 @@ class DynamicArray {
 
 // Converts a static shape into a dynamic shape.
 template <size_t Rank>
-DynamicShape makeDynamicShape(const nda::shape_of_rank<Rank>& shape);
+DynamicShape MakeDynamicShape(const nda::shape_of_rank<Rank>& shape);
 
 // TODO(jiawen): Lifetime bound.
 // Note that `T` can be const qualified.
 template <typename T, size_t Rank>
-nda::array_ref_of_rank<T, Rank> arrayRefOf(const DynamicArrayRef& dar);
+nda::array_ref_of_rank<T, Rank> ArrayRefOf(const DynamicArrayRef& dar);
 
 // TODO(jiawen):
 // - Assert T is not const.
@@ -369,12 +369,12 @@ nda::array_ref_of_rank<T, Rank> arrayRefOf(const DynamicArrayRef& dar);
 // But that's probably fine. Using a generic ArrayRefType is brittle too, until
 // we use concepts.
 template <typename T, size_t Rank>
-DynamicArrayRef dynamicArrayRefOf(const nda::array_ref_of_rank<T, Rank>& ar);
+DynamicArrayRef DynamicArrayRefOf(const nda::array_ref_of_rank<T, Rank>& ar);
 
 // ----- Implementation of template functions -----
 template <typename T, size_t Rank>
-nda::array_ref_of_rank<T, Rank> arrayRefOf(const DynamicArrayRef& dar) {
-  if (dar.data_type() != dataTypeFor<std::remove_const_t<T>>()) {
+nda::array_ref_of_rank<T, Rank> ArrayRefOf(const DynamicArrayRef& dar) {
+  if (dar.data_type() != DataTypeFor<std::remove_const_t<T>>()) {
     return {};
   }
   if (dar.rank() != Rank) {
@@ -382,29 +382,29 @@ nda::array_ref_of_rank<T, Rank> arrayRefOf(const DynamicArrayRef& dar) {
   }
 
   nda::shape_of_rank<Rank> shape;
-  forRange<0, Rank>(
+  ForRange<0, Rank>(
       [&]<size_t D>() { shape.template dim<D>() = dar.shape().dims()[D]; });
 
   return nda::make_array_ref(dar.data<T>(), shape);
 }
 
 template <typename T, size_t Rank>
-DynamicArrayRef dynamicArrayRefOf(const nda::array_ref_of_rank<T, Rank>& ar) {
+DynamicArrayRef DynamicArrayRefOf(const nda::array_ref_of_rank<T, Rank>& ar) {
   nda::shape_of_rank<Rank> ar_shape = ar.shape();
-  DynamicShape dynamic_shape = makeDynamicShape<Rank>(ar_shape);
+  DynamicShape dynamic_shape = MakeDynamicShape<Rank>(ar_shape);
 
   return DynamicArrayRef(reinterpret_cast<uint8_t*>(ar.data()),
-                         dataTypeFor<T>(), dynamic_shape);
+                         DataTypeFor<T>(), dynamic_shape);
 }
 
 template <size_t Rank>
-DynamicShape makeDynamicShape(const nda::shape_of_rank<Rank>& shape) {
+DynamicShape MakeDynamicShape(const nda::shape_of_rank<Rank>& shape) {
   std::array<int64_t, Rank> mins;
   std::array<int64_t, Rank> extents;
   std::array<int64_t, Rank> strides;
   // TODO(jiawen): Can use shape.extent(), which returns an index_type, which is
   // a tuple<index_t, ...>. Then use tuple_to_array to turn it into an array.
-  forRange<0, Rank>([&]<size_t D>() {
+  ForRange<0, Rank>([&]<size_t D>() {
     mins[D] = shape.template dim<D>().min();
     extents[D] = shape.template dim<D>().extent();
     strides[D] = shape.template dim<D>().stride();
@@ -413,50 +413,50 @@ DynamicShape makeDynamicShape(const nda::shape_of_rank<Rank>& shape) {
 }
 
 // ----- Explicit template declarations -----
-extern template int8_t DynamicArrayRef::at<int8_t>(
+extern template int8_t DynamicArrayRef::At<int8_t>(
     absl::Span<const int64_t>) const;
-extern template int16_t DynamicArrayRef::at<int16_t>(
+extern template int16_t DynamicArrayRef::At<int16_t>(
     absl::Span<const int64_t>) const;
-extern template int32_t DynamicArrayRef::at<int32_t>(
+extern template int32_t DynamicArrayRef::At<int32_t>(
     absl::Span<const int64_t>) const;
-extern template int64_t DynamicArrayRef::at<int64_t>(
-    absl::Span<const int64_t>) const;
-
-extern template uint8_t DynamicArrayRef::at<uint8_t>(
-    absl::Span<const int64_t>) const;
-extern template uint16_t DynamicArrayRef::at<uint16_t>(
-    absl::Span<const int64_t>) const;
-extern template uint32_t DynamicArrayRef::at<uint32_t>(
-    absl::Span<const int64_t>) const;
-extern template uint64_t DynamicArrayRef::at<uint64_t>(
+extern template int64_t DynamicArrayRef::At<int64_t>(
     absl::Span<const int64_t>) const;
 
-extern template half DynamicArrayRef::at<half>(absl::Span<const int64_t>) const;
-extern template float DynamicArrayRef::at<float>(
+extern template uint8_t DynamicArrayRef::At<uint8_t>(
     absl::Span<const int64_t>) const;
-extern template double DynamicArrayRef::at<double>(
+extern template uint16_t DynamicArrayRef::At<uint16_t>(
+    absl::Span<const int64_t>) const;
+extern template uint32_t DynamicArrayRef::At<uint32_t>(
+    absl::Span<const int64_t>) const;
+extern template uint64_t DynamicArrayRef::At<uint64_t>(
     absl::Span<const int64_t>) const;
 
-extern template int8_t& DynamicArrayRef::at<int8_t>(absl::Span<const int64_t>);
-extern template int16_t& DynamicArrayRef::at<int16_t>(
+extern template half DynamicArrayRef::At<half>(absl::Span<const int64_t>) const;
+extern template float DynamicArrayRef::At<float>(
+    absl::Span<const int64_t>) const;
+extern template double DynamicArrayRef::At<double>(
+    absl::Span<const int64_t>) const;
+
+extern template int8_t& DynamicArrayRef::At<int8_t>(absl::Span<const int64_t>);
+extern template int16_t& DynamicArrayRef::At<int16_t>(
     absl::Span<const int64_t>);
-extern template int32_t& DynamicArrayRef::at<int32_t>(
+extern template int32_t& DynamicArrayRef::At<int32_t>(
     absl::Span<const int64_t>);
-extern template int64_t& DynamicArrayRef::at<int64_t>(
+extern template int64_t& DynamicArrayRef::At<int64_t>(
     absl::Span<const int64_t>);
 
-extern template uint8_t& DynamicArrayRef::at<uint8_t>(
+extern template uint8_t& DynamicArrayRef::At<uint8_t>(
     absl::Span<const int64_t>);
-extern template uint16_t& DynamicArrayRef::at<uint16_t>(
+extern template uint16_t& DynamicArrayRef::At<uint16_t>(
     absl::Span<const int64_t>);
-extern template uint32_t& DynamicArrayRef::at<uint32_t>(
+extern template uint32_t& DynamicArrayRef::At<uint32_t>(
     absl::Span<const int64_t>);
-extern template uint64_t& DynamicArrayRef::at<uint64_t>(
+extern template uint64_t& DynamicArrayRef::At<uint64_t>(
     absl::Span<const int64_t>);
 
-extern template half& DynamicArrayRef::at<half>(absl::Span<const int64_t>);
-extern template float& DynamicArrayRef::at<float>(absl::Span<const int64_t>);
-extern template double& DynamicArrayRef::at<double>(absl::Span<const int64_t>);
+extern template half& DynamicArrayRef::At<half>(absl::Span<const int64_t>);
+extern template float& DynamicArrayRef::At<float>(absl::Span<const int64_t>);
+extern template double& DynamicArrayRef::At<double>(absl::Span<const int64_t>);
 
 }  // namespace npy_array
 

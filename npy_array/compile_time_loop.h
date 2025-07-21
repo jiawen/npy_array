@@ -14,7 +14,7 @@ namespace npy_array {
 // Compile-time iteration over a type list: applies the template function F<T>
 // for each element T in `Ts`. E.g.,:
 //
-// forTypes<int, float, double>([&]<typename T>() {
+// ForTypes<int, float, double>([&]<typename T>() {
 //   // Do something with T.
 //   if constexpr (std::is_same_as_v<T, int>) {
 //     // Do something special for int.
@@ -23,29 +23,29 @@ namespace npy_array {
 //   }
 // });
 template <typename... Ts, typename F>
-constexpr void forTypes(F&& f);
+constexpr void ForTypes(F&& f);
 
 // Compile-time iteration over values: applies the template function F<X> for
 // each element X in `Xs`. E.g.,:
 //
-// forValues<1, 2, 3, 4, 5>([&]<int Rank>() {
+// ForValues<1, 2, 3, 4, 5>([&]<int Rank>() {
 //   createPybind<ArrayOfRank<float, Rank>>>();
 // });
 template <auto... Xs, typename F>
-constexpr void forValues(F&& f);
+constexpr void ForValues(F&& f);
 
 // Compile-time iteration over a range of values: applies the template function
 // F<X> for each element X in the half-open interval [B, E). Note that negative
 // numbers need to be parenthesized. E.g.,:
 //
-// forRange<(-10), 6>([&]<int X>() {
+// ForRange<(-10), 6>([&]<int X>() {
 //   // Do something with the compile-time constant X in [-10, 6).
 // });
 template <auto B, auto E, typename F>
-constexpr void forRange(F&& f);
+constexpr void ForRange(F&& f);
 
-// Same as forTypes, but also provides the index of the type in the list. E.g.,
-// enumerateTypes<int, float>([&]<std::size_t I, typename T>() {
+// Same as ForTypes, but also provides the index of the type in the list. E.g.,
+// EnumerateTypes<int, float>([&]<std::size_t I, typename T>() {
 //   // Do something with I, T.
 //   if constexpr (std::is_same_as_v<T, int>) {
 //     static_assert(std::is_same_v<T, int>);
@@ -54,33 +54,33 @@ constexpr void forRange(F&& f);
 //   }
 // });
 template <typename... Ts, typename F>
-constexpr void enumerateTypes(F&& f);
+constexpr void EnumerateTypes(F&& f);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation of template functions
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename... Ts, typename F>
-constexpr void forTypes(F&& f) {
+constexpr void ForTypes(F&& f) {
   (f.template operator()<Ts>(), ...);
 }
 
 template <auto... Xs, typename F>
-constexpr void forValues(F&& f) {
+constexpr void ForValues(F&& f) {
   (f.template operator()<Xs>(), ...);
 }
 
 template <auto B, auto E, typename F>
-constexpr void forRange(F&& f) {
+constexpr void ForRange(F&& f) {
   using T = std::common_type_t<decltype(B), decltype(E)>;
 
   [&f]<auto... Xs>(std::integer_sequence<T, Xs...>) {
-    forValues<(B + Xs)...>(f);
+    ForValues<(B + Xs)...>(f);
   }(std::make_integer_sequence<T, E - B>{});
 }
 
 template <typename... Ts, typename F>
-constexpr void enumerateTypes(F&& f) {
+constexpr void EnumerateTypes(F&& f) {
   [&f]<auto... Is>(std::index_sequence<Is...>) {
     (f.template operator()<Is, Ts>(), ...);
   }(std::index_sequence_for<Ts...>{});

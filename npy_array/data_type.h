@@ -70,11 +70,11 @@ void AbslStringify(Sink& sink, DataType dt) {
 }
 
 // Returns the size of 1 element of type `dt`, in bytes.
-size_t elementSize(DataType dt);
+size_t ElementSize(DataType dt);
 
 // Maps T to a DataType.
 template <typename T>
-DataType dataTypeFor();
+DataType DataTypeFor();
 
 }  // namespace npy_array
 

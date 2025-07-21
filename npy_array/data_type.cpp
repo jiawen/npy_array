@@ -2,7 +2,7 @@
 
 namespace npy_array {
 
-size_t elementSize(DataType dt) {
+size_t ElementSize(DataType dt) {
   switch (dt) {
     case DataType::kUndefined:
       return 0;
@@ -32,62 +32,62 @@ size_t elementSize(DataType dt) {
 }
 
 template <typename T>
-DataType dataTypeFor() {
+DataType DataTypeFor() {
   return DataType::kUndefined;
 }
 
 template <>
-DataType dataTypeFor<int8_t>() {
+DataType DataTypeFor<int8_t>() {
   return DataType::kInt8;
 }
 
 template <>
-DataType dataTypeFor<int16_t>() {
+DataType DataTypeFor<int16_t>() {
   return DataType::kInt16;
 }
 
 template <>
-DataType dataTypeFor<int32_t>() {
+DataType DataTypeFor<int32_t>() {
   return DataType::kInt32;
 }
 
 template <>
-DataType dataTypeFor<int64_t>() {
+DataType DataTypeFor<int64_t>() {
   return DataType::kInt64;
 }
 
 template <>
-DataType dataTypeFor<uint8_t>() {
+DataType DataTypeFor<uint8_t>() {
   return DataType::kUint8;
 }
 
 template <>
-DataType dataTypeFor<uint16_t>() {
+DataType DataTypeFor<uint16_t>() {
   return DataType::kUint16;
 }
 
 template <>
-DataType dataTypeFor<uint32_t>() {
+DataType DataTypeFor<uint32_t>() {
   return DataType::kUint32;
 }
 
 template <>
-DataType dataTypeFor<uint64_t>() {
+DataType DataTypeFor<uint64_t>() {
   return DataType::kUint64;
 }
 
 template <>
-DataType dataTypeFor<half>() {
+DataType DataTypeFor<half>() {
   return DataType::kFloat16;
 }
 
 template <>
-DataType dataTypeFor<float>() {
+DataType DataTypeFor<float>() {
   return DataType::kFloat32;
 }
 
 template <>
-DataType dataTypeFor<double>() {
+DataType DataTypeFor<double>() {
   return DataType::kFloat64;
 }
 

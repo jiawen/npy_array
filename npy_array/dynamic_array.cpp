@@ -34,7 +34,7 @@ DynamicShape::DynamicShape(absl::Span<const int64_t> mins,
   }
 }
 
-int64_t DynamicShape::numElements() const {
+int64_t DynamicShape::NumElements() const {
   int64_t num_elements = 1;
   for (const auto& d : dims_) {
     num_elements *= d.extent();
@@ -42,7 +42,7 @@ int64_t DynamicShape::numElements() const {
   return num_elements;
 }
 
-int64_t DynamicShape::flatIndex(absl::Span<const int64_t> indices) const {
+int64_t DynamicShape::FlatIndex(absl::Span<const int64_t> indices) const {
   assert(indices.size() == rank());
 
   int64_t flat_index = 0;
@@ -56,71 +56,71 @@ DynamicArrayRef::DynamicArrayRef(uint8_t* data, DataType data_type,
                                  const DynamicShape& shape)
     : data_(data), data_type_(data_type), shape_(shape) {}
 
-int64_t DynamicArrayRef::totalSizeBytes() const {
-  return numElements() * elementSizeBytes();
+int64_t DynamicArrayRef::TotalSizeBytes() const {
+  return NumElements() * ElementSizeBytes();
 }
 
 DynamicArray::DynamicArray(DataType data_type,
                            absl::Span<const int64_t> extents)
-    : data_type_(data_type), shape_(extents), data_(totalSizeBytes()) {}
+    : data_type_(data_type), shape_(extents), data_(TotalSizeBytes()) {}
 
 DynamicArrayRef DynamicArray::ref() {
   return DynamicArrayRef(data_.data(), data_type_, shape_);
 }
 
 template <typename T>
-T DynamicArrayRef::at(absl::Span<const int64_t> indices) const {
-  return *elementPtr<T>(indices);
+T DynamicArrayRef::At(absl::Span<const int64_t> indices) const {
+  return *ElementPtr<T>(indices);
 }
 
 template <typename T>
-T& DynamicArrayRef::at(absl::Span<const int64_t> indices) {
-  return *elementPtr<T>(indices);
+T& DynamicArrayRef::At(absl::Span<const int64_t> indices) {
+  return *ElementPtr<T>(indices);
 }
 
 template <typename T>
-const T* DynamicArrayRef::elementPtr(absl::Span<const int64_t> indices) const {
-  assert(dataTypeFor<T>() == data_type_);
-  const int64_t element_index = shape_.flatIndex(indices);
+const T* DynamicArrayRef::ElementPtr(absl::Span<const int64_t> indices) const {
+  assert(DataTypeFor<T>() == data_type_);
+  const int64_t element_index = shape_.FlatIndex(indices);
   return data<T>() + element_index;
 }
 
 template <typename T>
-T* DynamicArrayRef::elementPtr(absl::Span<const int64_t> indices) {
-  assert(dataTypeFor<T>() == data_type_);
-  const int64_t element_index = shape_.flatIndex(indices);
+T* DynamicArrayRef::ElementPtr(absl::Span<const int64_t> indices) {
+  assert(DataTypeFor<T>() == data_type_);
+  const int64_t element_index = shape_.FlatIndex(indices);
   return data<T>() + element_index;
 }
 
-template int8_t DynamicArrayRef::at<int8_t>(absl::Span<const int64_t>) const;
-template int16_t DynamicArrayRef::at<int16_t>(absl::Span<const int64_t>) const;
-template int32_t DynamicArrayRef::at<int32_t>(absl::Span<const int64_t>) const;
-template int64_t DynamicArrayRef::at<int64_t>(absl::Span<const int64_t>) const;
+template int8_t DynamicArrayRef::At<int8_t>(absl::Span<const int64_t>) const;
+template int16_t DynamicArrayRef::At<int16_t>(absl::Span<const int64_t>) const;
+template int32_t DynamicArrayRef::At<int32_t>(absl::Span<const int64_t>) const;
+template int64_t DynamicArrayRef::At<int64_t>(absl::Span<const int64_t>) const;
 
-template uint8_t DynamicArrayRef::at<uint8_t>(absl::Span<const int64_t>) const;
-template uint16_t DynamicArrayRef::at<uint16_t>(
+template uint8_t DynamicArrayRef::At<uint8_t>(absl::Span<const int64_t>) const;
+template uint16_t DynamicArrayRef::At<uint16_t>(
     absl::Span<const int64_t>) const;
-template uint32_t DynamicArrayRef::at<uint32_t>(
+template uint32_t DynamicArrayRef::At<uint32_t>(
     absl::Span<const int64_t>) const;
-template uint64_t DynamicArrayRef::at<uint64_t>(
+template uint64_t DynamicArrayRef::At<uint64_t>(
     absl::Span<const int64_t>) const;
 
-template half DynamicArrayRef::at<half>(absl::Span<const int64_t>) const;
-template float DynamicArrayRef::at<float>(absl::Span<const int64_t>) const;
-template double DynamicArrayRef::at<double>(absl::Span<const int64_t>) const;
+template half DynamicArrayRef::At<half>(absl::Span<const int64_t>) const;
+template float DynamicArrayRef::At<float>(absl::Span<const int64_t>) const;
+template double DynamicArrayRef::At<double>(absl::Span<const int64_t>) const;
 
-template int8_t& DynamicArrayRef::at<int8_t>(absl::Span<const int64_t>);
-template int16_t& DynamicArrayRef::at<int16_t>(absl::Span<const int64_t>);
-template int32_t& DynamicArrayRef::at<int32_t>(absl::Span<const int64_t>);
-template int64_t& DynamicArrayRef::at<int64_t>(absl::Span<const int64_t>);
+template int8_t& DynamicArrayRef::At<int8_t>(absl::Span<const int64_t>);
+template int16_t& DynamicArrayRef::At<int16_t>(absl::Span<const int64_t>);
+template int32_t& DynamicArrayRef::At<int32_t>(absl::Span<const int64_t>);
+template int64_t& DynamicArrayRef::At<int64_t>(absl::Span<const int64_t>);
 
-template uint8_t& DynamicArrayRef::at<uint8_t>(absl::Span<const int64_t>);
-template uint16_t& DynamicArrayRef::at<uint16_t>(absl::Span<const int64_t>);
-template uint32_t& DynamicArrayRef::at<uint32_t>(absl::Span<const int64_t>);
-template uint64_t& DynamicArrayRef::at<uint64_t>(absl::Span<const int64_t>);
+template uint8_t& DynamicArrayRef::At<uint8_t>(absl::Span<const int64_t>);
+template uint16_t& DynamicArrayRef::At<uint16_t>(absl::Span<const int64_t>);
+template uint32_t& DynamicArrayRef::At<uint32_t>(absl::Span<const int64_t>);
+template uint64_t& DynamicArrayRef::At<uint64_t>(absl::Span<const int64_t>);
 
-template half& DynamicArrayRef::at<half>(absl::Span<const int64_t>);
-template float& DynamicArrayRef::at<float>(absl::Span<const int64_t>);
-template double& DynamicArrayRef::at<double>(absl::Span<const int64_t>);
+template half& DynamicArrayRef::At<half>(absl::Span<const int64_t>);
+template float& DynamicArrayRef::At<float>(absl::Span<const int64_t>);
+template double& DynamicArrayRef::At<double>(absl::Span<const int64_t>);
 
 }  // namespace npy_array
