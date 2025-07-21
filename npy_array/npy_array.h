@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NPY_ARRAY_NPY_ARRAY_NPY_ARRAY_H_
-#define NPY_ARRAY_NPY_ARRAY_NPY_ARRAY_H_
+#ifndef NPY_ARRAY_NPY_ARRAY_H_
+#define NPY_ARRAY_NPY_ARRAY_H_
 
 #include <algorithm>
 #include <cstddef>
@@ -331,4 +331,4 @@ nda::array<DataType, ShapeType, Alloc> DeserializeFromNpyString(
 
 }  // namespace npy_array
 
-#endif  // NPY_ARRAY_NPY_ARRAY_NPY_ARRAY_H_
+#endif  // NPY_ARRAY_NPY_ARRAY_H_
