@@ -40,6 +40,18 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "npy_dynamic_array",
+    srcs = ["npy_array/npy_dynamic_array.cpp"],
+    hdrs = ["npy_array/npy_dynamic_array.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dynamic_array",
+        ":npy_array",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
 # GoogleTest support for npy_array::half.
 cc_library(
     name = "gtest_half",
