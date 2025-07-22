@@ -52,10 +52,28 @@ DataType GetDataType(char type_char, size_t word_size) {
 std::vector<int64_t> GetNpyExtents(
     const npy_array::internal::NpyHeader& npy_header) {
   if (npy_header.fortran_order) {
-    return std::vector<int64_t>(npy_header.shape.begin(), npy_header.shape.end());
+    return std::vector<int64_t>(npy_header.shape.begin(),
+                                npy_header.shape.end());
   } else {
-    return std::vector<int64_t>(npy_header.shape.rbegin(), npy_header.shape.rend());
+    return std::vector<int64_t>(npy_header.shape.rbegin(),
+                                npy_header.shape.rend());
   }
+}
+
+absl::Status VerifyTypeAndExtents(const DataType data_type,
+                                  const std::vector<int64_t>& extents) {
+  // Verify data type is valid.
+  if (data_type == DataType::kUndefined) {
+    return absl::InvalidArgumentError("Unknown data type.");
+  }
+
+  // Verify extents are not negative.
+  for (const auto& extent : extents) {
+    if (extent < 0) {
+      return absl::InvalidArgumentError("Negative extent not supported.");
+    }
+  }
+  return absl::OkStatus();
 }
 
 }  // namespace
@@ -79,8 +97,14 @@ absl::StatusOr<DynamicArray> DecodeDynamicArrayFromNpy(
 
   const std::vector<int64_t> extents = GetNpyExtents(npy_header);
 
-  DynamicArray arr(GetDataType(npy_header.type_char, npy_header.word_size),
-                   extents);
+  const DataType data_type =
+      GetDataType(npy_header.type_char, npy_header.word_size);
+  const absl::Status status = VerifyTypeAndExtents(data_type, extents);
+  if (!status.ok()) {
+    return status;
+  }
+
+  DynamicArray arr(data_type, extents);
 
   memcpy(arr.data(), npy_data.begin() + npy_header.data_start_offset,
          expected_data_size);
@@ -107,11 +131,16 @@ absl::StatusOr<DynamicArrayRef> DecodeDynamicArrayRefFromNpy(
 
   const std::vector<int64_t> extents = GetNpyExtents(npy_header);
 
-  return DynamicArrayRef(
-      reinterpret_cast<uint8_t*>(npy_data.data() +
-                                 npy_header.data_start_offset),
-      GetDataType(npy_header.type_char, npy_header.word_size),
-      DynamicShape(extents));
+  const DataType data_type =
+      GetDataType(npy_header.type_char, npy_header.word_size);
+  const absl::Status status = VerifyTypeAndExtents(data_type, extents);
+  if (!status.ok()) {
+    return status;
+  }
+
+  return DynamicArrayRef(reinterpret_cast<uint8_t*>(
+                             npy_data.data() + npy_header.data_start_offset),
+                         data_type, DynamicShape(extents));
 }
 
 }  // namespace npy_array
