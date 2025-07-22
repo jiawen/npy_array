@@ -6,7 +6,7 @@
 
 namespace npy_array {
 
-absl::StatusOr<ZipWriter> ZipWriter::open(const std::filesystem::path& path) {
+absl::StatusOr<ZipWriter> ZipWriter::Open(const std::filesystem::path& path) {
   zipFile zip_file = zipOpen64(path.c_str(), /*append=*/0);
   if (zip_file == NULL) {
     return absl::InternalError(
@@ -20,20 +20,20 @@ ZipWriter::ZipWriter(ZipWriter&& other) { *this = std::move(other); }
 
 ZipWriter& ZipWriter::operator=(ZipWriter&& other) {
   if (this != &other) {
-    (void)(close());
+    (void)(Close());
     zip_file_ = std::exchange(other.zip_file_, (zipFile)NULL);
   }
   return *this;
 }
 
-ZipWriter::~ZipWriter() { (void)(close()); }
+ZipWriter::~ZipWriter() { (void)(Close()); }
 
-absl::Status ZipWriter::addFile(const std::filesystem::path& path,
+absl::Status ZipWriter::AddFile(const std::filesystem::path& path,
                                 std::string_view data) {
-  return addFile(path, data, /*options=*/{});
+  return AddFile(path, data, /*options=*/{});
 }
 
-absl::Status ZipWriter::addFile(const std::filesystem::path& path,
+absl::Status ZipWriter::AddFile(const std::filesystem::path& path,
                                 std::string_view data,
                                 const AddFileOptions& options) {
   // Always use zip64. If we wanted, can theoreticaly check data.size() and only
@@ -73,7 +73,7 @@ absl::Status ZipWriter::addFile(const std::filesystem::path& path,
   return absl::OkStatus();
 }
 
-absl::Status ZipWriter::close() {
+absl::Status ZipWriter::Close() {
   if (zip_file_ == NULL) {
     return absl::InternalError("zip file is already closed");
   }
@@ -86,7 +86,7 @@ absl::Status ZipWriter::close() {
   return absl::OkStatus();
 }
 
-bool ZipWriter::isClosed() const { return zip_file_ == NULL; }
+bool ZipWriter::IsClosed() const { return zip_file_ == NULL; }
 
 ZipWriter::ZipWriter(zipFile zip_file) : zip_file_(zip_file) {}
 

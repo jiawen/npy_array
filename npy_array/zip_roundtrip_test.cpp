@@ -17,10 +17,11 @@ namespace npy_array {
 namespace {
 
 TEST(ZipRoundtripTest, CanWriteZipFileWithNoContents) {
-  const std::string filename = absl::StrCat(TempDir(), "test_empty.zip");
+  const std::filesystem::path filename =
+      absl::StrCat(TempDir(), "test_empty.zip");
 
   {
-    absl::StatusOr<ZipWriter> maybe_zip_writer = ZipWriter::open(filename);
+    absl::StatusOr<ZipWriter> maybe_zip_writer = ZipWriter::Open(filename);
     EXPECT_THAT(maybe_zip_writer, IsOk());
 
     // Destructor closes.
@@ -31,27 +32,28 @@ TEST(ZipRoundtripTest, CanWriteZipFileWithNoContents) {
 
   // Apparently minizip can't unzip empty files.
   absl::StatusOr<absl::flat_hash_map<std::string, std::string>> maybe_contents =
-      readZipFile(filename);
+      ReadZipFile(filename);
   EXPECT_THAT(maybe_contents, Not(IsOk()));
 }
 
 TEST(ZipRoundtripTest, CanWriteMultipleFiles) {
-  const std::string filename = absl::StrCat(TempDir(), "test_multiple.zip");
+  const std::filesystem::path filename =
+      absl::StrCat(TempDir(), "test_multiple.zip");
   {
-    absl::StatusOr<ZipWriter> maybe_zip_writer = ZipWriter::open(filename);
+    absl::StatusOr<ZipWriter> maybe_zip_writer = ZipWriter::Open(filename);
     EXPECT_THAT(maybe_zip_writer, IsOk());
 
-    EXPECT_THAT(maybe_zip_writer->addFile("hello.txt", "hello"), IsOk());
-    EXPECT_THAT(maybe_zip_writer->addFile("world.txt", "world"), IsOk());
+    EXPECT_THAT(maybe_zip_writer->AddFile("hello.txt", "hello"), IsOk());
+    EXPECT_THAT(maybe_zip_writer->AddFile("world.txt", "world"), IsOk());
 
     // Explicit close.
-    EXPECT_THAT(maybe_zip_writer->close(), IsOk());
-    EXPECT_TRUE(maybe_zip_writer->isClosed());
+    EXPECT_THAT(maybe_zip_writer->Close(), IsOk());
+    EXPECT_TRUE(maybe_zip_writer->IsClosed());
   }
 
   {
     absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
-        maybe_contents = readZipFile(filename);
+        maybe_contents = ReadZipFile(filename);
     EXPECT_THAT(maybe_contents, IsOk());
 
     EXPECT_THAT(*maybe_contents, SizeIs(2));
@@ -61,22 +63,22 @@ TEST(ZipRoundtripTest, CanWriteMultipleFiles) {
 }
 
 TEST(ZipRoundtripTest, CanWriteMultipleFiles_LastOneWins) {
-  const std::string filename =
+  const std::filesystem::path filename =
       absl::StrCat(TempDir(), "test_multiple_repeated.zip");
   {
-    absl::StatusOr<ZipWriter> maybe_zip_writer = ZipWriter::open(filename);
+    absl::StatusOr<ZipWriter> maybe_zip_writer = ZipWriter::Open(filename);
     EXPECT_THAT(maybe_zip_writer, IsOk());
 
-    EXPECT_THAT(maybe_zip_writer->addFile("hello.txt", "hello"), IsOk());
-    EXPECT_THAT(maybe_zip_writer->addFile("world.txt", "world"), IsOk());
-    EXPECT_THAT(maybe_zip_writer->addFile("world.txt", "world2"), IsOk());
+    EXPECT_THAT(maybe_zip_writer->AddFile("hello.txt", "hello"), IsOk());
+    EXPECT_THAT(maybe_zip_writer->AddFile("world.txt", "world"), IsOk());
+    EXPECT_THAT(maybe_zip_writer->AddFile("world.txt", "world2"), IsOk());
 
     // Destructor closes.
   }
 
   {
     absl::StatusOr<absl::flat_hash_map<std::string, std::string>>
-        maybe_contents = readZipFile(filename);
+        maybe_contents = ReadZipFile(filename);
     EXPECT_THAT(maybe_contents, IsOk());
 
     EXPECT_THAT(*maybe_contents, SizeIs(2));

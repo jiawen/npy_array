@@ -26,7 +26,7 @@ struct ReadZipOptions {
 // In this case, the last entry wins.
 // - If any part of the reading process fails, returns an error instead of
 // partially read data.
-absl::StatusOr<absl::flat_hash_map<std::string, std::string>> readZipFile(
+absl::StatusOr<absl::flat_hash_map<std::string, std::string>> ReadZipFile(
     const std::filesystem::path& path, const ReadZipOptions& options = {});
 
 // TODO(jiawen): Add a streaming API if we ever need one. It is not difficult

@@ -27,7 +27,7 @@ class ZipWriter {
     int level = -1;
   };
 
-  static absl::StatusOr<ZipWriter> open(const std::filesystem::path& path);
+  static absl::StatusOr<ZipWriter> Open(const std::filesystem::path& path);
 
   ZipWriter(ZipWriter&& other);
   ZipWriter& operator=(ZipWriter&& other);
@@ -36,13 +36,13 @@ class ZipWriter {
   ~ZipWriter();
 
   // Same as addFile with the default options.
-  absl::Status addFile(const std::filesystem::path& path,
+  absl::Status AddFile(const std::filesystem::path& path,
                        std::string_view data);
 
   // Adds `data` to the zip file at `path`.
   //
   // Does nothing if this ZipWriter is already closed.
-  absl::Status addFile(const std::filesystem::path& path, std::string_view data,
+  absl::Status AddFile(const std::filesystem::path& path, std::string_view data,
                        const AddFileOptions& options);
 
   // Explicitly closes this ZipWriter. It can be called multiple times. Once a
@@ -50,10 +50,10 @@ class ZipWriter {
   //
   // You may want to do this rather than use the destructor if you want to know
   // if `close()` failed (i.e., if a file is successfully written).
-  absl::Status close();
+  absl::Status Close();
 
   // Returns true if `close()` has been called.
-  bool isClosed() const;
+  bool IsClosed() const;
 
  private:
   explicit ZipWriter(zipFile zip_file);

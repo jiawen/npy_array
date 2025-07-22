@@ -1,10 +1,11 @@
 #include "npy_array/zlib_compressor.h"
 
 #include "absl/strings/str_cat.h"
+#include "third_party/zlib/zlib.h"
 
 namespace npy_array {
 
-absl::StatusOr<std::string> zlibCompress(std::string_view src) {
+absl::StatusOr<std::string> ZlibCompress(std::string_view src) {
   const size_t dst_bound = compressBound(src.size());
   std::string dst(dst_bound, '\0');
 
@@ -21,7 +22,7 @@ absl::StatusOr<std::string> zlibCompress(std::string_view src) {
   return dst;
 }
 
-absl::StatusOr<std::string> zlibDecompress(std::string_view src,
+absl::StatusOr<std::string> ZlibDecompress(std::string_view src,
                                            size_t uncompressed_size) {
   std::string dst(uncompressed_size, '\0');
 

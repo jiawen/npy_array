@@ -15,7 +15,7 @@ namespace {
 
 TEST(DeflateTest, EmptyStringAndHeader) {
   const std::string src = "";
-  absl::StatusOr<std::string> compressed = zlibCompress(src);
+  absl::StatusOr<std::string> compressed = ZlibCompress(src);
   EXPECT_THAT(compressed, IsOk());
 
   EXPECT_EQ(compressed->size(), 8);
@@ -39,7 +39,7 @@ TEST(DeflateTest, EmptyStringAndHeader) {
   EXPECT_EQ(chk % 31, 0);
 
   absl::StatusOr<std::string> decompressed =
-      zlibDecompress(*compressed, src.size());
+      ZlibDecompress(*compressed, src.size());
   EXPECT_THAT(decompressed, IsOk());
 
   EXPECT_EQ(src, *decompressed);
@@ -47,11 +47,11 @@ TEST(DeflateTest, EmptyStringAndHeader) {
 
 TEST(DeflateTest, RoundtripHelloWorld) {
   const std::string src = "Hello, World!";
-  absl::StatusOr<std::string> compressed = zlibCompress(src);
+  absl::StatusOr<std::string> compressed = ZlibCompress(src);
   EXPECT_THAT(compressed, IsOk());
 
   absl::StatusOr<std::string> decompressed =
-      zlibDecompress(*compressed, src.size());
+      ZlibDecompress(*compressed, src.size());
   EXPECT_THAT(decompressed, IsOk());
 
   EXPECT_EQ(src, *decompressed);
@@ -59,13 +59,13 @@ TEST(DeflateTest, RoundtripHelloWorld) {
 
 TEST(DeflateTest, CompressZeroes) {
   const std::string src(16 * 1024 * 1024, '\0');  // 16 MB.
-  absl::StatusOr<std::string> compressed = zlibCompress(src);
+  absl::StatusOr<std::string> compressed = ZlibCompress(src);
   EXPECT_THAT(compressed, IsOk());
 
   EXPECT_EQ(compressed->size(), 16316);  // ~16 KB.
 
   absl::StatusOr<std::string> decompressed =
-      zlibDecompress(*compressed, src.size());
+      ZlibDecompress(*compressed, src.size());
   EXPECT_THAT(decompressed, IsOk());
   EXPECT_EQ(src, *decompressed);
 }

@@ -11,7 +11,7 @@ namespace npy_array {
 
 namespace {
 
-absl::StatusOr<std::string> getCurrentFilename(unzFile unz_file) {
+absl::StatusOr<std::string> GetCurrentFilename(unzFile unz_file) {
   unz_file_info file_info;
   memset(&file_info, 0, sizeof(unz_file_info));
 
@@ -34,7 +34,7 @@ absl::StatusOr<std::string> getCurrentFilename(unzFile unz_file) {
   return filename;
 }
 
-absl::StatusOr<std::string> readCurrentFile(unzFile unz_file,
+absl::StatusOr<std::string> ReadCurrentFile(unzFile unz_file,
                                             absl::Span<char> buffer) {
   std::string result;
 
@@ -60,7 +60,7 @@ absl::StatusOr<std::string> readCurrentFile(unzFile unz_file,
 
 }  // namespace
 
-absl::StatusOr<absl::flat_hash_map<std::string, std::string>> readZipFile(
+absl::StatusOr<absl::flat_hash_map<std::string, std::string>> ReadZipFile(
     const std::filesystem::path& path, const ReadZipOptions& options) {
   unzFile unz_file = unzOpen64(path.c_str());
   if (unz_file == NULL) {
@@ -88,10 +88,10 @@ absl::StatusOr<absl::flat_hash_map<std::string, std::string>> readZipFile(
     }
 
     std::string filename;
-    ASSIGN_OR_RETURN(filename, getCurrentFilename(unz_file));
+    ASSIGN_OR_RETURN(filename, GetCurrentFilename(unz_file));
 
     std::string data;
-    ASSIGN_OR_RETURN(data, readCurrentFile(unz_file, buffer_span));
+    ASSIGN_OR_RETURN(data, ReadCurrentFile(unz_file, buffer_span));
 
     result[filename] = std::move(data);
 
