@@ -49,7 +49,7 @@ DataType GetDataType(char type_char, size_t word_size) {
   }
 }
 
-const std::vector<int64_t> GetNpyExtents(
+std::vector<int64_t> GetNpyExtents(
     npy_array::internal::NpyHeader npy_header) {
   if (!npy_header.fortran_order) {
     std::reverse(npy_header.shape.begin(), npy_header.shape.end());
