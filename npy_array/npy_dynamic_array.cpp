@@ -89,7 +89,7 @@ absl::StatusOr<DynamicArray> DecodeDynamicArrayFromNpy(
 }
 
 absl::StatusOr<DynamicArrayRef> DecodeDynamicArrayRefFromNpy(
-    std::string& npy_data ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    std::string& npy_data) {
   auto npy_header = npy_array::internal::ReadHeader(npy_data);
   if (!npy_header.valid) {
     return absl::InvalidArgumentError("Invalid npy header");
