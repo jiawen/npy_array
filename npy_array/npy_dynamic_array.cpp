@@ -112,7 +112,7 @@ absl::StatusOr<DynamicArray> DecodeDynamicArrayFromNpy(
   return arr;
 }
 
-absl::StatusOr<DynamicArrayRef> DecodeDynamicArrayRefFromNpy(
+absl::StatusOr<DynamicArrayRef> MakeDynamicArrayRefOfNpy(
     std::string& npy_data) {
   auto npy_header = npy_array::internal::ReadHeader(npy_data);
   if (!npy_header.valid) {
