@@ -113,7 +113,7 @@ absl::StatusOr<DynamicArray> DecodeDynamicArrayFromNpy(
 }
 
 absl::StatusOr<DynamicArrayRef> MakeDynamicArrayRefOfNpy(
-    std::string& npy_data) {
+    std::string_view npy_data) {
   auto npy_header = npy_array::internal::ReadHeader(npy_data);
   if (!npy_header.valid) {
     return absl::InvalidArgumentError("Invalid npy header");
@@ -138,8 +138,8 @@ absl::StatusOr<DynamicArrayRef> MakeDynamicArrayRefOfNpy(
     return status;
   }
 
-  return DynamicArrayRef(reinterpret_cast<uint8_t*>(
-                             npy_data.data() + npy_header.data_start_offset),
+  return DynamicArrayRef(reinterpret_cast<uint8_t*>(const_cast<char*>(
+                             npy_data.data() + npy_header.data_start_offset)),
                          data_type, DynamicShape(extents));
 }
 

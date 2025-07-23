@@ -22,7 +22,7 @@ absl::StatusOr<DynamicArray> DecodeDynamicArrayFromNpy(
 // Array shape is inferred from the npy header as is, but will be reversed if
 // the npy array is not in fortran order.
 absl::StatusOr<DynamicArrayRef> MakeDynamicArrayRefOfNpy(
-    std::string& npy_data ABSL_ATTRIBUTE_LIFETIME_BOUND);
+    std::string_view npy_data);
 
 }  // namespace npy_array
 

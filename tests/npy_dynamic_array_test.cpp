@@ -12,18 +12,6 @@ namespace {
 constexpr std::string_view kNpzPath =
     "tests/data/npy_dynamic_array_testdata.npz";
 
-template <typename T>
-T GetDynamicArrayOrRefFromNpy(std::string& npy_data) {
-  absl::StatusOr<T> arr_or_ref;
-  if constexpr (std::is_same_v<T, DynamicArray>) {
-    arr_or_ref = DecodeDynamicArrayFromNpy(npy_data);
-  } else {
-    arr_or_ref = MakeDynamicArrayRefOfNpy(npy_data);
-  }
-  EXPECT_TRUE(arr_or_ref.ok());
-  return *std::move(arr_or_ref);
-}
-
 template <typename T, typename ArrayOrRefType>
 void TestReadFromNpz() {
   auto npz_data = ReadZipFile(kNpzPath);
@@ -32,14 +20,21 @@ void TestReadFromNpz() {
   DataType data_type = DataTypeFor<T>();
 
   {
-    // Empty array
+    // File contains an empty array.
     std::string empty_filename = absl::StrCat(data_type, "_empty.npy");
     auto it = npz_data->find(empty_filename);
     EXPECT_NE(it, npz_data->end()) << "File not found: " << empty_filename;
     EXPECT_FALSE(it->second.empty()) << "File is empty: " << empty_filename;
 
-    ArrayOrRefType arr =
-        GetDynamicArrayOrRefFromNpy<ArrayOrRefType>(it->second);
+    absl::StatusOr<ArrayOrRefType> maybe_arr;
+    if constexpr (std::is_same_v<ArrayOrRefType, DynamicArray>) {
+      maybe_arr = DecodeDynamicArrayFromNpy(it->second);
+    } else {
+      maybe_arr = MakeDynamicArrayRefOfNpy(it->second);
+    }
+    EXPECT_TRUE(maybe_arr.ok());
+
+    ArrayOrRefType arr = *std::move(maybe_arr);
 
     EXPECT_EQ(arr.data_type(), data_type);
     EXPECT_TRUE(arr.empty()) << "Array should be empty: " << empty_filename;
@@ -51,8 +46,14 @@ void TestReadFromNpz() {
     EXPECT_NE(it, npz_data->end()) << "File not found: " << filename;
     EXPECT_FALSE(it->second.empty()) << "File is empty: " << filename;
 
-    ArrayOrRefType arr =
-        GetDynamicArrayOrRefFromNpy<ArrayOrRefType>(it->second);
+    absl::StatusOr<ArrayOrRefType> maybe_arr;
+    if constexpr (std::is_same_v<ArrayOrRefType, DynamicArray>) {
+      maybe_arr = DecodeDynamicArrayFromNpy(it->second);
+    } else {
+      maybe_arr = MakeDynamicArrayRefOfNpy(it->second);
+    }
+    EXPECT_TRUE(maybe_arr.ok());
+    ArrayOrRefType arr = *std::move(maybe_arr);
 
     EXPECT_EQ(arr.data_type(), data_type);
     EXPECT_FALSE(arr.empty());
