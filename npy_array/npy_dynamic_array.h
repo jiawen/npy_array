@@ -15,14 +15,14 @@ namespace npy_array {
 // Array shape is inferred from the npy header as is, but will be reversed if
 // the npy array is not in fortran order.
 absl::StatusOr<DynamicArray> DecodeDynamicArrayFromNpy(
-    std::string_view npy_data);
+    std::string_view npy_data ABSL_ATTRIBUTE_LIFETIME_BOUND);
 
 // Reads npy data from a string and decodes into a DynamicArrayRef view of the
 // data.
 // Array shape is inferred from the npy header as is, but will be reversed if
 // the npy array is not in fortran order.
 absl::StatusOr<DynamicArrayRef> MakeDynamicArrayRefOfNpy(
-    std::string_view npy_data);
+    std::string_view npy_data ABSL_ATTRIBUTE_LIFETIME_BOUND);
 
 }  // namespace npy_array
 
