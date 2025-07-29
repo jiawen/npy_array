@@ -47,3 +47,14 @@ http_archive(
         "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.2.4.tar.gz",
     ],
 )
+
+# zlib-ng.
+http_archive(
+    name = "minizip-ng",
+    build_file = "//third_party/minizip-ng:minizip-ng.BUILD",
+    sha256 = "c362e35ee973fa7be58cc5e38a4a6c23cc8f7e652555daf4f115a9eb2d3a6be7",
+    strip_prefix = "minizip-ng-4.0.10",
+    urls = [
+        "https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz",
+    ],
+)
