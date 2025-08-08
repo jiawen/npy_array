@@ -1,11 +1,13 @@
 #ifndef NPY_ARRAY_ZIP_WRITER_H_
 #define NPY_ARRAY_ZIP_WRITER_H_
 
+#include <cstdint>
 #include <filesystem>
+#include <string>
+#include <string_view>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "third_party/zlib/minizip/zip.h"
 
 namespace npy_array {
 
@@ -16,26 +18,32 @@ enum class ZipMethod {
 
 class ZipWriter {
  public:
+  // When appending to a zip file, we need to grow the memory buffer. This is
+  // the default increment by which it grows.
+  static constexpr size_t kDefaultMemoryGrowSize = 1024 * 1024;  // 1 MB.
+
   struct AddFileOptions {
     ZipMethod method = ZipMethod::kDeflate;
 
     // Compression level.
+    // -1: default.
     // 0: no compression.
     // 1: best speed.
     // 9: best compression.
-    // -1: default.
-    int level = -1;
+    int16_t level = -1;
+
+    // TODO(jiawen):
+    // - absl::Time or absl::CivilTime.
+    // - Permissions?
   };
 
-  static absl::StatusOr<ZipWriter> Open(const std::filesystem::path& path);
-
+  // Opens a new ZipWriter that buffers compressed data into memory.
+  explicit ZipWriter(size_t memory_grow_size = kDefaultMemoryGrowSize);
   ZipWriter(ZipWriter&& other);
   ZipWriter& operator=(ZipWriter&& other);
-
-  // Automatically calls `close()`.
   ~ZipWriter();
 
-  // Same as addFile with the default options.
+  // Same as AddFile with the default options.
   absl::Status AddFile(const std::filesystem::path& path,
                        std::string_view data);
 
@@ -45,20 +53,19 @@ class ZipWriter {
   absl::Status AddFile(const std::filesystem::path& path, std::string_view data,
                        const AddFileOptions& options);
 
-  // Explicitly closes this ZipWriter. It can be called multiple times. Once a
-  // ZipWriter is closed, it cannot be used to add more files.
+  // Explicitly closes this ZipWriter and returns the compressed data. It can
+  // only be used in an rvalue context, e.g.,:
   //
-  // You may want to do this rather than use the destructor if you want to know
-  // if `close()` failed (i.e., if a file is successfully written).
-  absl::Status Close();
-
-  // Returns true if `close()` has been called.
-  bool IsClosed() const;
+  // absl::StatusOr<std::string> maybe_data = std::move(zip_writer).Close();
+  absl::StatusOr<std::string> Close() &&;
 
  private:
-  explicit ZipWriter(zipFile zip_file);
+  void* mem_stream_ = nullptr;
+  void* zip_writer_ = nullptr;
 
-  zipFile zip_file_ = NULL;
+  // Closes this ZipWriter: no more files can be added. If `compressed_data` is
+  // non-null, it will be set to the compressed data.
+  absl::Status Close(std::string* compressed_data);
 };
 
 }  // namespace npy_array

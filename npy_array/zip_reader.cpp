@@ -2,104 +2,79 @@
 
 #include <utility>
 
+#include "absl/cleanup/cleanup.h"
 #include "absl/strings/str_cat.h"
-#include "absl/types/span.h"
-#include "npy_array/status_macros.h"
-#include "third_party/zlib/minizip/unzip.h"
+#include "third_party/minizip-ng/mz.h"
+#include "third_party/minizip-ng/mz_strm.h"
+#include "third_party/minizip-ng/mz_zip.h"
+#include "third_party/minizip-ng/mz_zip_rw.h"
 
 namespace npy_array {
 
-namespace {
+absl::StatusOr<absl::flat_hash_map<std::filesystem::path, std::string>>
+ReadZipFile(std::string_view data) {
+  void* zip_reader = mz_zip_reader_create();
+  if (zip_reader == nullptr) {
+    return absl::InternalError("mz_zip_reader_create failed");
+  }
+  absl::Cleanup cleanup_zip_reader([&] { mz_zip_reader_delete(&zip_reader); });
 
-absl::StatusOr<std::string> GetCurrentFilename(unzFile unz_file) {
-  unz_file_info file_info;
-  memset(&file_info, 0, sizeof(unz_file_info));
+  int32_t err;
+  absl::flat_hash_map<std::filesystem::path, std::string> result;
 
-  int ret;
-
-  ret = unzGetCurrentFileInfo(unz_file, &file_info, NULL, 0, NULL, 0, NULL, 0);
-  if (ret != UNZ_OK) {
+  err = mz_zip_reader_open_buffer(
+      zip_reader,
+      const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data.data())),
+      data.size(), /*copy=*/0);
+  if (err != MZ_OK) {
     return absl::InternalError(
-        "unzGetCurrentFileInfo failed retrieving filename size");
+        absl::StrCat("mz_zip_reader_open_buffer failed, err = ", err));
+  }
+  absl::Cleanup cleanup_zip_reader_open_buffer(
+      [&] { mz_zip_reader_close(zip_reader); });
+
+  err = mz_zip_reader_goto_first_entry(zip_reader);
+  // If the zip file is empty, `mz_zip_reader_goto_first_entry` returns -100.
+  // This is not an error.
+  if (err == MZ_END_OF_LIST) {
+    return result;
   }
 
-  std::string filename(file_info.size_filename, '\0');
-  ret = unzGetCurrentFileInfo(unz_file, &file_info, filename.data(),
-                              file_info.size_filename + 1, NULL, 0, NULL, 0);
-  if (ret != UNZ_OK) {
+  if (err != MZ_OK) {
     return absl::InternalError(
-        "unzGetCurrentFileInfo failed retrieving filename");
-  }
-
-  return filename;
-}
-
-absl::StatusOr<std::string> ReadCurrentFile(unzFile unz_file,
-                                            absl::Span<char> buffer) {
-  std::string result;
-
-  // unzReadCurrentFile returns:
-  // -1 on error.
-  // 0 on EOF.
-  // > 0 on success.
-  int bytes_read;
-  while ((bytes_read =
-              unzReadCurrentFile(unz_file, buffer.data(), buffer.size())) > 0) {
-    // Read a positive number of bytes.
-    std::string_view valid_data(reinterpret_cast<char*>(buffer.data()),
-                                bytes_read);
-    absl::StrAppend(&result, valid_data);
-  }
-
-  if (bytes_read < 0) {
-    return absl::InternalError("unzReadCurrentFile failed");
-  }
-
-  return result;
-}
-
-}  // namespace
-
-absl::StatusOr<absl::flat_hash_map<std::string, std::string>> ReadZipFile(
-    const std::filesystem::path& path, const ReadZipOptions& options) {
-  unzFile unz_file = unzOpen64(path.c_str());
-  if (unz_file == NULL) {
-    return absl::InternalError(
-        absl::StrCat("unzOpen64 failed opening", path.c_str(), " for read"));
-  }
-
-  int ret;
-  absl::flat_hash_map<std::string, std::string> result;
-
-  // Allocate a fixed size buffer.
-  std::string buffer(options.buffer_size, '\0');
-  // Make a view of it to pass to readCurrentFile().
-  absl::Span<char> buffer_span(buffer);
-
-  ret = unzGoToFirstFile(unz_file);
-  if (ret != UNZ_OK) {
-    return absl::InternalError("unzGoToFirstFile failed");
+        absl::StrCat("mz_zip_reader_goto_first_entry failed, err = ", err));
   }
 
   do {
-    ret = unzOpenCurrentFile(unz_file);
-    if (ret != UNZ_OK) {
-      return absl::InternalError("unzOpenCurrentFile failed");
+    err = mz_zip_reader_entry_open(zip_reader);
+    if (err != MZ_OK) {
+      return absl::InternalError(
+          absl::StrCat("mz_zip_reader_entry_open failed, err = ", err));
     }
 
-    std::string filename;
-    ASSIGN_OR_RETURN(filename, GetCurrentFilename(unz_file));
-
-    std::string data;
-    ASSIGN_OR_RETURN(data, ReadCurrentFile(unz_file, buffer_span));
-
-    result[filename] = std::move(data);
-
-    ret = unzCloseCurrentFile(unz_file);
-    if (ret != UNZ_OK) {
-      return absl::InternalError("unzCloseCurrentFile failed (bad CRC)");
+    mz_zip_file* file_info = nullptr;
+    err = mz_zip_reader_entry_get_info(zip_reader, &file_info);
+    if (err != MZ_OK) {
+      return absl::InternalError(
+          absl::StrCat("mz_zip_reader_entry_get_info failed, err = ", err));
     }
-  } while (unzGoToNextFile(unz_file) == UNZ_OK);
+
+    const int32_t buffer_length = file_info->uncompressed_size;
+
+    std::filesystem::path path(file_info->filename);
+    std::string data(buffer_length, '\0');
+    err =
+        mz_zip_reader_entry_save_buffer(zip_reader, data.data(), buffer_length);
+    if (err != MZ_OK) {
+      return absl::InternalError(
+          absl::StrCat("mz_zip_reader_entry_save_buffer failed, err = ", err));
+    }
+
+    result[path] = std::move(data);
+
+    // Apparently I should not call `mz_zip_reader_entry_close`.
+    // `mz_zip_reader_goto_next_entry` will close the entry for us.
+  } while (mz_zip_reader_goto_next_entry(zip_reader) == MZ_OK);
 
   return result;
 }
