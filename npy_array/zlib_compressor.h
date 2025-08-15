@@ -12,7 +12,8 @@ namespace npy_array {
 // The output includes the zlib header.
 absl::StatusOr<std::string> ZlibCompress(std::string_view src);
 
-// Decompresses `src` with the DEFLATE and returns the decompressed data.
+// Decompresses `src` with the DEFLATE algorithm and returns the decompressed
+// data.
 //
 // Note that the `uncompressed_size` must be known in advance (`src.size()`
 // above).

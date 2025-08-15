@@ -1,0 +1,5 @@
+sh_binary(
+    name = "gen_headers",
+    srcs = ["gen_headers.sh"],
+    visibility = ["//visibility:public"],
+)

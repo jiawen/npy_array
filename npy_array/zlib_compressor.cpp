@@ -1,7 +1,7 @@
 #include "npy_array/zlib_compressor.h"
 
 #include "absl/strings/str_cat.h"
-#include "third_party/zlib/zlib.h"
+#include "third_party/zlib-ng/zlib.h"
 
 namespace npy_array {
 

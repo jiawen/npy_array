@@ -72,12 +72,11 @@ cc_library(
     srcs = ["npy_array/zip_reader.cpp"],
     hdrs = ["npy_array/zip_reader.h"],
     deps = [
-        ":status_macros",
+        "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:span",
-        "@zlib//:minizip",
+        "@minizip-ng",
     ],
 )
 
@@ -86,10 +85,11 @@ cc_library(
     srcs = ["npy_array/zip_writer.cpp"],
     hdrs = ["npy_array/zip_writer.h"],
     deps = [
+        "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@zlib//:minizip",
+        "@minizip-ng",
     ],
 )
 
@@ -100,7 +100,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@zlib",
+        "@zlib-ng//:zlib",
     ],
 )
 
@@ -156,6 +156,7 @@ cc_test(
         "@com_google_absl//absl/status:status_matchers",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+        "@minizip-ng",
     ],
 )
 

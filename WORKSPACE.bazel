@@ -37,14 +37,24 @@ http_archive(
     ],
 )
 
-# zlib.
+# zlib-ng.
 http_archive(
-    name = "zlib",
-    build_file = "//third_party:zlib.BUILD",
-    sha256 = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
-    strip_prefix = "zlib-1.3.1",
+    name = "zlib-ng",
+    build_file = "//third_party/zlib-ng:zlib-ng.BUILD",
+    sha256 = "a73343c3093e5cdc50d9377997c3815b878fd110bf6511c2c7759f2afb90f5a3",
+    strip_prefix = "zlib-ng-2.2.4",
     urls = [
-        "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
-        "https://zlib.net/zlib-1.3.1.tar.gz",
+        "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.2.4.tar.gz",
+    ],
+)
+
+# zlib-ng.
+http_archive(
+    name = "minizip-ng",
+    build_file = "//third_party/minizip-ng:minizip-ng.BUILD",
+    sha256 = "c362e35ee973fa7be58cc5e38a4a6c23cc8f7e652555daf4f115a9eb2d3a6be7",
+    strip_prefix = "minizip-ng-4.0.10",
+    urls = [
+        "https://github.com/zlib-ng/minizip-ng/archive/refs/tags/4.0.10.tar.gz",
     ],
 )
