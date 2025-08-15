@@ -19,7 +19,6 @@ ZipWriter::ZipWriter(size_t memory_grow_size)
 
   mz_stream_mem_set_grow_size(mem_stream_, memory_grow_size);
 
-  // CHECK these too.
   int32_t err;
 
   err = mz_stream_open(mem_stream_, /*path=*/nullptr, MZ_OPEN_MODE_CREATE);
