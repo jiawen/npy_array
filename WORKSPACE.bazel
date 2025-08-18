@@ -48,7 +48,7 @@ http_archive(
     ],
 )
 
-# zlib-ng.
+# minizip-ng.
 http_archive(
     name = "minizip-ng",
     build_file = "//third_party/minizip-ng:minizip-ng.BUILD",
