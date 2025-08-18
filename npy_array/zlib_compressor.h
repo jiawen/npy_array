@@ -10,6 +10,9 @@ namespace npy_array {
 
 // Compresses `src` with the DEFLATE algorithm and returns the compressed data.
 // The output includes the zlib header.
+//
+// TODO(jiawen): Add version that takes options and calls zng_compress2 so you
+// can choose the compression level.
 absl::StatusOr<std::string> ZlibCompress(std::string_view src);
 
 // Decompresses `src` with the DEFLATE algorithm and returns the decompressed
